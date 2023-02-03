@@ -26,6 +26,7 @@ class MyWidget(QMainWindow):
         uic.loadUi('UI.ui', self)
         self.pushButton.clicked.connect(self.change_perspective)
         self.pushButton_2.clicked.connect(self.search)
+        self.pushButton_3.clicked.connect(self.erase)
 
         self.image = None
         self.perspectives = ["map", "sat", "sat,skl"]
@@ -83,6 +84,10 @@ class MyWidget(QMainWindow):
     def search(self):
         self.lat, self.lon = [float(i) for i in get_coordinates(str(self.lineEdit.text()))]
         self.params = f"&pt={self.lat},{self.lon},pm2gnm1"
+        self.update_map()
+
+    def erase(self):
+        self.params = ""
         self.update_map()
 
 
