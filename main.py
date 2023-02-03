@@ -11,12 +11,19 @@ def get_coordinates(toponym_to_find):
     responce = requests.get(
         f"https://geocode-maps.yandex.ru/1.x/?apikey=40d1649f-0493-4b70-98ba-98533de7710b&format=json&geocode={toponym_to_find}")
 
+    try:
+        post_idx = \
+            responce.json()["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]["metaDataProperty"][
+                "GeocoderMetaData"]["Address"]["postal_code"]
+    except Exception:
+        post_idx = ""
+
     return \
         responce.json()["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"][
             "Point"][
             "pos"].split(), \
         responce.json()["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]["metaDataProperty"][
-            "GeocoderMetaData"]["Address"]["formatted"]
+            "GeocoderMetaData"]["Address"]["formatted"], post_idx
 
 
 class MyWidget(QMainWindow):
@@ -29,6 +36,7 @@ class MyWidget(QMainWindow):
         self.pushButton.clicked.connect(self.change_perspective)
         self.pushButton_2.clicked.connect(self.search)
         self.pushButton_3.clicked.connect(self.erase)
+        self.checkBox.stateChanged.connect(self.search)
 
         self.image = None
         self.perspectives = ["map", "sat", "sat,skl"]
@@ -86,8 +94,10 @@ class MyWidget(QMainWindow):
     def search(self):
         self.lat, self.lon = [float(i) for i in get_coordinates(str(self.lineEdit.text()))[0]]
         address = get_coordinates(str(self.lineEdit.text()))[1]
+        post_idx = get_coordinates(str(self.lineEdit.text()))[2]
         self.params = f"&pt={self.lat},{self.lon},pm2gnm1"
-        self.label_3.setText(f"Адрес: {address}")
+        add = post_idx if self.checkBox.isChecked() else ""
+        self.label_3.setText(f"Адрес: {address} " + add)
         self.update_map()
 
     def erase(self):
