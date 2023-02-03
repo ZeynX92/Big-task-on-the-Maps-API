@@ -7,6 +7,16 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication, QMainWindow
 
 
+def get_coordinates(toponym_to_find):
+    responce = requests.get(
+        f"https://geocode-maps.yandex.ru/1.x/?apikey=40d1649f-0493-4b70-98ba-98533de7710b&format=json&geocode={toponym_to_find}")
+
+    return \
+        responce.json()["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"][
+            "Point"][
+            "pos"].split()
+
+
 class MyWidget(QMainWindow):
     def __init__(self):
         self.lat, self.lon = float(input("Lat: ")), float(input("Lon: "))
@@ -15,15 +25,17 @@ class MyWidget(QMainWindow):
         super().__init__()
         uic.loadUi('UI.ui', self)
         self.pushButton.clicked.connect(self.change_perspective)
+        self.pushButton_2.clicked.connect(self.search)
 
         self.image = None
         self.perspectives = ["map", "sat", "sat,skl"]
         self.current_perspective = 0
+        self.params = ""
         self.update_map()
 
     def update_map(self):
         response = requests.get(
-            f"https://static-maps.yandex.ru/1.x/?ll={self.lat},{self.lon}&z={self.z}&l={self.perspectives[self.current_perspective]}")
+            f"https://static-maps.yandex.ru/1.x/?ll={self.lat},{self.lon}&z={self.z}&l={self.perspectives[self.current_perspective]}{self.params}")
 
         map_file = "map.png"
         with open(map_file, "wb") as file:
@@ -66,6 +78,11 @@ class MyWidget(QMainWindow):
     def change_perspective(self):
         self.current_perspective += 1
         self.current_perspective %= 3
+        self.update_map()
+
+    def search(self):
+        self.lat, self.lon = [float(i) for i in get_coordinates(str(self.lineEdit.text()))]
+        self.params = f"&pt={self.lat},{self.lon},pm2gnm1"
         self.update_map()
 
 
