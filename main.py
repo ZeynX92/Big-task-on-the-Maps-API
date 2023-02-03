@@ -14,7 +14,9 @@ def get_coordinates(toponym_to_find):
     return \
         responce.json()["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"][
             "Point"][
-            "pos"].split()
+            "pos"].split(), \
+        responce.json()["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]["metaDataProperty"][
+            "GeocoderMetaData"]["Address"]["formatted"]
 
 
 class MyWidget(QMainWindow):
@@ -42,7 +44,7 @@ class MyWidget(QMainWindow):
         with open(map_file, "wb") as file:
             file.write(response.content)
 
-        self.image = QPixmap("map.png").scaled(681, 481)
+        self.image = QPixmap("map.png").scaled(681, 441)
         self.label.setPixmap(self.image)
 
     def mousePressEvent(self, event):
@@ -82,12 +84,15 @@ class MyWidget(QMainWindow):
         self.update_map()
 
     def search(self):
-        self.lat, self.lon = [float(i) for i in get_coordinates(str(self.lineEdit.text()))]
+        self.lat, self.lon = [float(i) for i in get_coordinates(str(self.lineEdit.text()))[0]]
+        address = get_coordinates(str(self.lineEdit.text()))[1]
         self.params = f"&pt={self.lat},{self.lon},pm2gnm1"
+        self.label_3.setText(f"Адрес: {address}")
         self.update_map()
 
     def erase(self):
         self.params = ""
+        self.label_3.setText("Адрес: ")
         self.update_map()
 
 
