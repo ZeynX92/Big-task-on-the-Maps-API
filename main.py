@@ -58,11 +58,9 @@ class MyWidget(QMainWindow):
         elif event.key() == Qt.Key_Down:
             self.lon -= 0.05 * (17 - self.z)
         elif event.key() == Qt.Key_Left:
-            print("HERE")
-            self.lat += 0.05 * (17 - self.z)
-        elif event.key() == Qt.Key_Right:
-            print("here")
             self.lat -= 0.05 * (17 - self.z)
+        elif event.key() == Qt.Key_Right:
+            self.lat += 0.05 * (17 - self.z)
         self.update_map()
 
     def change_perspective(self):
