@@ -1,10 +1,22 @@
-import sys
+import sys, math
 import requests
 from PyQt5 import uic
 from PyQt5.QtGui import QPixmap
 from PyQt5 import QtGui
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication, QMainWindow
+
+lat_step, lon_step = 0.008, 0.02
+coord_to_geo_x, coord_to_geo_y = 0.0000428, 0.0000428
+
+
+def screen_to_geo(pos, longitude, lattitude, z):
+    dy = 225 - pos[1]
+    dx = pos[0] - 300
+    lx = longitude + dx * coord_to_geo_x * 2 ** (15 - z)
+    ly = lattitude + dy * coord_to_geo_y * math.cos(math.radians(lattitude)) * 2 ** (15 - z)
+
+    return round(lx, 6), round(ly, 6)
 
 
 def get_coordinates(toponym_to_find):
@@ -58,12 +70,17 @@ class MyWidget(QMainWindow):
     def mousePressEvent(self, event):
         try:
             QApplication.focusWidget().clearFocus()
+            print(event.pos(), event.button())
+            if event.button() == Qt.LeftButton:
+                self.lon, self.lat = screen_to_geo([event.x(), event.y()], self.lon, self.lat, self.z)
+                print(self.lat, self.lon)
+                self.lineEdit.setText(f"{self.lat},{self.lon}")
+                self.search()
+                self.update_map()
         except AttributeError:
             pass
 
     def keyPressEvent(self, event):
-        print("HERE_UYTRTE")
-        print(event.key())
         if event.key() == Qt.Key_PageUp:
             if 0 <= self.z < 17:
                 self.label_2.setText("")
