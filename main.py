@@ -77,6 +77,16 @@ class MyWidget(QMainWindow):
                 self.lineEdit.setText(f"{self.lat},{self.lon}")
                 self.search()
                 self.update_map()
+            elif event.button() == Qt.RightButton:
+                try:
+                    responce = requests.get(
+                        f"https://search-maps.yandex.ru/v1/?apikey=dda3ddba-c9ea-4ead-9010-f43fbc15c6e3&text={self.lon},{self.lat}&lang=ru_RU&ll={self.lat},{self.lon}&spn=0.004545,0.004545&results=1&rspn=1")
+                    responce = responce.json()["features"][0]["properties"]["GeocoderMetaData"]
+                    self.erase()
+                    self.label_3.setText(responce['text'])
+                except IndexError as e:
+                    print(e)
+
         except AttributeError:
             pass
 
